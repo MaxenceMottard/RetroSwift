@@ -20,6 +20,12 @@ public struct Network<D> {
         }
     }
 
+    /// Init the property wrapper to generate a service caller
+    /// - Parameter url: String url for the request.
+    /// - Parameter method: The `HTTPMethode` for the request.
+    /// - Parameter headers: Headers to use in the request.
+    /// - Parameter successStatusCodes: List of status which don't return an error.
+    /// - Parameter urlSession: URLSession to use to send request. Use `URLSession.shared` by default.
     public init(
         url: String,
         method: HTTPMethod,

@@ -8,6 +8,9 @@
 import Foundation
 
 public protocol NetworkRequestInterceptor {
+    var jsonDecoder: JSONDecoder? { get }
+    var jsonEncoder: JSONEncoder? { get }
+
     func intercept(_ request: inout URLRequest) async throws
 }
 
@@ -20,10 +23,10 @@ public class ServiceCaller<D> {
     }
 
     private var jsonDecoder: JSONDecoder {
-        return JSONDecoder()
+        return requestInterceptor?.jsonDecoder ?? JSONDecoder()
     }
     private var jsonEncoder: JSONEncoder {
-        return JSONEncoder()
+        return requestInterceptor?.jsonEncoder ?? JSONEncoder()
     }
 
     //  MARK: Public functions
