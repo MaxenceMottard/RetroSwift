@@ -9,11 +9,12 @@ import Foundation
 
 struct NetworkParameters<D> {
     let decodeType: D.Type
-    let urlSession: URLSession
     let method: HTTPMethod
     let url: String
     let headers: [String: String]
     let successStatusCodes: Set<Int>
 
-    var caller: ServiceCaller<D> { ServiceCaller(self) }
+    func caller(requestInterceptor: NetworkRequestInterceptor) -> ServiceCaller<D> {
+        ServiceCaller(self, requestInterceptor: requestInterceptor)
+    }
 }

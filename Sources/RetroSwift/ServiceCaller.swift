@@ -7,26 +7,13 @@
 
 import Foundation
 
-public protocol NetworkRequestInterceptor {
-    var jsonDecoder: JSONDecoder? { get }
-    var jsonEncoder: JSONEncoder? { get }
-
-    func intercept(_ request: inout URLRequest) async throws
-}
-
 public class ServiceCaller<D> {
-    var requestInterceptor: NetworkRequestInterceptor?
+    private let requestInterceptor: NetworkRequestInterceptor
     private let params: NetworkParameters<D>
 
-    init(_ params: NetworkParameters<D>) {
+    init(_ params: NetworkParameters<D>, requestInterceptor: NetworkRequestInterceptor) {
         self.params = params
-    }
-
-    private var jsonDecoder: JSONDecoder {
-        return requestInterceptor?.jsonDecoder ?? JSONDecoder()
-    }
-    private var jsonEncoder: JSONEncoder {
-        return requestInterceptor?.jsonEncoder ?? JSONEncoder()
+        self.requestInterceptor = requestInterceptor
     }
 
     //  MARK: Public functions
@@ -36,7 +23,7 @@ public class ServiceCaller<D> {
         let request = try await generateRequest()
         let data = try await genericCall(request)
 
-        return try jsonDecoder.decode(D.self, from: data)
+        return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
     public func call() async throws {
@@ -49,7 +36,7 @@ public class ServiceCaller<D> {
         let request = try await generateRequest(with: body)
         let data = try await genericCall(request)
 
-        return try jsonDecoder.decode(D.self, from: data)
+        return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
     public func call<T: Encodable>(body: T) async throws {
@@ -60,7 +47,7 @@ public class ServiceCaller<D> {
     //  MARK: Private functions
     private func genericCall(_ request: URLRequest) async throws -> Data {
 
-        let (data, response) = try await params.urlSession.dataAsync(from: request)
+        let (data, response) = try await requestInterceptor.urlSession.dataAsync(from: request)
 
         guard let response = response as? HTTPURLResponse else { throw NetworkError.unknownError }
 
@@ -75,7 +62,7 @@ public class ServiceCaller<D> {
     }
 
     private func generateRequest<T: Encodable>(with body: T) async throws -> URLRequest {
-        guard let encodedBody = try? jsonEncoder.encode(body) else { throw NetworkError.encodeError }
+        guard let encodedBody = try? requestInterceptor.jsonEncoder.encode(body) else { throw NetworkError.encodeError }
 
         var request = try await generateRequest()
         request.httpBody = encodedBody
@@ -93,7 +80,7 @@ public class ServiceCaller<D> {
             request.addValue($1, forHTTPHeaderField: $0)
         }
 
-        try await requestInterceptor?.intercept(&request)
+        try await requestInterceptor.intercept(&request)
 
         return request
     }
