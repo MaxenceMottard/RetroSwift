@@ -19,28 +19,28 @@ public class ServiceCaller<D> {
     //  MARK: Public functions
 
     //  MARK: Without body
-    public func call() async throws -> D where D: Decodable {
-        let request = try await generateRequest()
+    public func call(queryParameters: [String: Any] = [:]) async throws -> D where D: Decodable {
+        let request = try await generateRequest(queryParameters: queryParameters)
         let data = try await genericCall(request)
 
         return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
-    public func call() async throws {
-        let request = try await generateRequest()
+    public func call(queryParameters: [String: Any] = [:]) async throws {
+        let request = try await generateRequest(queryParameters: queryParameters)
         _ = try await genericCall(request)
     }
 
     //  MARK: With body
-    public func call<T: Encodable>(body: T) async throws -> D where D: Decodable {
-        let request = try await generateRequest(with: body)
+    public func call<T: Encodable>(body: T, queryParameters: [String: Any] = [:]) async throws -> D where D: Decodable {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters)
         let data = try await genericCall(request)
 
         return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
-    public func call<T: Encodable>(body: T) async throws {
-        let request = try await generateRequest(with: body)
+    public func call<T: Encodable>(body: T, queryParameters: [String: Any] = [:]) async throws {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters)
         _ = try await genericCall(request)
     }
 
@@ -61,17 +61,23 @@ public class ServiceCaller<D> {
         return data
     }
 
-    private func generateRequest<T: Encodable>(with body: T) async throws -> URLRequest {
+    private func generateRequest<T: Encodable>(with body: T, queryParameters: [String: Any]) async throws -> URLRequest {
         guard let encodedBody = try? requestInterceptor.jsonEncoder.encode(body) else { throw NetworkError.encodeError }
 
-        var request = try await generateRequest()
+        var request = try await generateRequest(queryParameters: queryParameters)
         request.httpBody = encodedBody
 
         return request
     }
 
-    private func generateRequest() async throws -> URLRequest {
-        guard let url = URL(string: params.url) else { throw NetworkError.wrongUrl }
+    private func generateRequest(queryParameters: [String: Any]) async throws -> URLRequest {
+        guard var url = URL(string: params.url) else { throw NetworkError.wrongUrl }
+
+        if queryParameters.values.count > 0, var component = URLComponents(string: url.absoluteString) {
+            component.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: "\($0.value)") }
+
+            url = component.url ?? url
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = params.method.rawValue
