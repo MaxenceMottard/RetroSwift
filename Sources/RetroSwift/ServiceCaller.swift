@@ -33,14 +33,16 @@ public class ServiceCaller<D> {
 
     public func uploadFile(filename: String, filetype: String, data: Data) async throws {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
-        let request = try await generateRequest(with: fileUploadingData.body, queryParameters: [:])
+        var request = try await generateRequest(queryParameters: [:])
+        request.httpBody = fileUploadingData.body
         params.headers["Content-Type"] = fileUploadingData.contentType
         _ = try await genericCall(request)
     }
 
     public func uploadFile(filename: String, filetype: String, data: Data) async throws -> D where D: Decodable {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
-        let request = try await generateRequest(with: fileUploadingData.body, queryParameters: [:])
+        var request = try await generateRequest(queryParameters: [:])
+        request.httpBody = fileUploadingData.body
         params.headers["Content-Type"] = fileUploadingData.contentType
         let data = try await genericCall(request)
 
