@@ -11,7 +11,7 @@ struct NetworkParameters<D> {
     let decodeType: D.Type
     let method: HTTPMethod
     let url: String
-    let headers: [String: String]
+    var headers: [String: String]
     let successStatusCodes: Set<Int>
 
     func caller(requestInterceptor: NetworkRequestInterceptor) -> ServiceCaller<D> {

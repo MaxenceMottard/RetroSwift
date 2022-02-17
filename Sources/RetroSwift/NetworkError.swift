@@ -9,6 +9,7 @@ import Foundation
 
 public enum NetworkError: Error {
     case cantGenerateRequest
+    case cantGenerateImageBody
     case decodeError
     case encodeError
     case wrongUrl

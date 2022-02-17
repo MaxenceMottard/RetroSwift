@@ -9,7 +9,7 @@ import Foundation
 
 public class ServiceCaller<D> {
     private let requestInterceptor: NetworkRequestInterceptor
-    private let params: NetworkParameters<D>
+    private var params: NetworkParameters<D>
 
     init(_ params: NetworkParameters<D>, requestInterceptor: NetworkRequestInterceptor) {
         self.params = params
@@ -31,6 +31,22 @@ public class ServiceCaller<D> {
         _ = try await genericCall(request)
     }
 
+    public func uploadFile(filename: String, filetype: String, data: Data) async throws {
+        let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
+        let request = try await generateRequest(with: fileUploadingData.body, queryParameters: [:])
+        params.headers["Content-Type"] = fileUploadingData.contentType
+        _ = try await genericCall(request)
+    }
+
+    public func uploadFile(filename: String, filetype: String, data: Data) async throws -> D where D: Decodable {
+        let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
+        let request = try await generateRequest(with: fileUploadingData.body, queryParameters: [:])
+        params.headers["Content-Type"] = fileUploadingData.contentType
+        let data = try await genericCall(request)
+
+        return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
+    }
+
     //  MARK: With body
     public func call<T: Encodable>(body: T, queryParameters: [String: Any] = [:]) async throws -> D where D: Decodable {
         let request = try await generateRequest(with: body, queryParameters: queryParameters)
@@ -45,6 +61,33 @@ public class ServiceCaller<D> {
     }
 
     //  MARK: Private functions
+    private func generateFileUploadBody(
+        filename: String,
+        filetype: String,
+        data: Data
+    ) throws -> (body: Data, contentType: String) {
+        let boundary = UUID().uuidString
+        let contentType = "multipart/form-data; boundary=\(boundary)"
+
+        guard let boundaryStart = "--\(boundary)\r\n".data(using: .utf8),
+              let boundaryEnd = "--\(boundary)--\r\n".data(using: .utf8),
+              let contentDispositionString = "Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8),
+              let contentTypeString = "Content-Type: \(filetype)\r\n\r\n".data(using: .utf8),
+              let separator = "\r\n".data(using: .utf8) else {
+                  throw NetworkError.cantGenerateImageBody
+              }
+
+        var body = Data()
+        body.append(boundaryStart)
+        body.append(contentDispositionString)
+        body.append(contentTypeString)
+        body.append(data)
+        body.append(separator)
+        body.append(boundaryEnd)
+
+        return (body: body, contentType: contentType)
+    }
+
     private func genericCall(_ request: URLRequest) async throws -> Data {
 
         let (data, response) = try await requestInterceptor.urlSession.dataAsync(from: request)
