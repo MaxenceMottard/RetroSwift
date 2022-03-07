@@ -1,0 +1,23 @@
+@Tutorial(time: 1) {
+    @Intro(title: "Installation") {
+        @Image(source: installation-cover.png, alt: "SPM")
+    }
+    
+    @Section(title: "Installing with SPM") {
+        @ContentAndMedia {
+            If you are using the SPM (Swift Package Manager), open the following menu item in Xcode:
+
+            File > Add Packages...
+
+            In the Search or Enter Package URL search box enter this url:
+
+            [https://github.com/MaxenceMottard/RetroSwift](https://github.com/MaxenceMottard/RetroSwift)
+            
+            Then select the dependency rule and press Add Package.
+            
+            @Image(source: "spm-installation.png", alt: "Screenshot of SPM Installation")
+        }
+        
+        @Steps {}
+    }
+}

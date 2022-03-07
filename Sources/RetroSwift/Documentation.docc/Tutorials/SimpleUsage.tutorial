@@ -1,0 +1,101 @@
+@Tutorial(time: 15) {
+    @Intro(title: "Simple Usage") {
+        @Image(source: xcode-cover.jpg, alt: "Xcode")
+    }
+    
+    @Section(title: "Create a service based on RetroSwift") {
+        @ContentAndMedia {
+            Here we will learn how to create network requests with RetroSwift.
+        }
+        
+        @Steps {     
+            @Step {
+                Create a new file, in example he will be name `AuthenticationService.swift`.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-1.swift)
+            }
+            
+            @Step {
+                Import Retroswift package.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-2.swift)
+            }
+            
+            @Step {
+                Create a class, in the example it is named AuthenticationService like the file name.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-3.swift)
+            }
+            
+            @Step {
+                Create new variable which represent the network request method.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-4.swift)
+            }
+            
+            @Step {
+                You should now use the Retroswift property wrapper <doc:Network>.
+                
+                This will create a variable of type <doc:ServiceCaller> that contains all the methods for making network requests.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-5.swift)
+            }
+            
+            @Step {
+                If you want the body of the response to be decoded, you simply create an Object which inherits from `Decodable`.
+                
+                In this example, we create the `LoginResponse` which contains one field named `accessToken` and a second named `refreshToken`. These properties are strings.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-6.swift)
+            }
+            
+            @Step {
+                You can now use the `LoginResponse` as a generic parameter to the `Network` property wrapper.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-service-7.swift)
+            }
+        }
+    }
+        
+    @Section(title: "Use requests created by RetroSwift") {
+        @ContentAndMedia {
+            Here we will use our request that we build in the first section
+        }
+        
+        @Steps {
+            @Step {
+                Here is a simple `View` with two TextFields and a button that will call our connection request. 
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-view-1.swift)
+            }
+            
+            @Step {
+                We will instantiate the `AuthenticationService` created earlier. 
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-view-2.swift)
+            }
+            
+            @Step {
+                We can now call our login request in Button action. 
+
+                > Important: All methods in <doc:ServiceCaller> are `throwable` and `async`. It is therefore necessary to use these methods in an Async function (like the `Task` callback) and between a `do catch` block.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-view-3.swift)
+            }
+            
+            @Step {
+                In order to pass a body to the query we just used, we must first create an `Encodable` object which represents our data.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-view-4.swift)
+            }
+            
+            @Step {
+                We then need to instantiate the object we have just created with the necessary data.
+
+                The last step is to pass this object as a parameter to the `call` function.
+                
+                @Code(name: "AuthenticationService.swift", file: authentication-view-5.swift)
+            }
+        }
+    }
+}

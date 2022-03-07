@@ -1,0 +1,145 @@
+@Tutorial(time: 30) {
+    @Intro(title: "Creating a new Web Service") {
+        In the development of the Kit, you might need to create a new Web Service. This tutorial guides you through the full implementation of a service.        
+    }
+    
+    @Section(title: "Initialize the service") {
+        @ContentAndMedia {
+            First, you need to determine if you need to create a new service file or not. You only have to create a new service if this is a new API from the Back-end point of view. 
+            
+            If you don't need a new file, then locate the existing file, and go to the section 2.
+            
+            For this example, we will create a new `VelocityLimitsService`.
+            
+            @Image(source: service-section1.png, alt: "A set of back-end APIs grouped by resources: all calls for Contact Information, then the Country API with all calls for this API, then Customers API, and Merchants API.")
+        }
+        
+        @Steps {            
+            @Step {
+                Create a new iOS file in the `/Core/Services/Epics` folder.
+                    
+                Rename it to `VelocityLimitsService.swift`.
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-01-01.swift) {
+                    @Image(source: service-preview1.png, alt: "A screenshot of the template selector in Xcode. In the top row, iOS is selected as the platform. In the file section, Swift file is selected as the template; there's a highlight placed over the Next button at the lower-right of the sheet.")
+                }
+            }
+            
+            @Step {
+                Create a new class named `VelocityLimitsService` and add inheritance to `BaseService`.
+
+                @Code(name: "VelocityLimitsService.swift", file: service-code-01-02.swift)
+            }
+            
+            @Step {
+                Go to the `ServiceKey` file and add a new case for your API.
+
+                @Code(name: "ServiceKey.swift", file: service-code-serviceKey-modified.swift, previousFile: service-code-serviceKey-original.swift)
+            }
+            
+            @Step {
+                Add the newly-created key to your service.
+
+                @Code(name: "VelocityLimitsService.swift", file: service-code-01-03.swift, previousFile: service-code-01-02.swift)
+            }
+            
+            @Step {
+                Create the initializer of the service and compute the base url for your API.
+
+                @Code(name: "VelocityLimitsService.swift", file: service-code-01-04.swift)
+            }
+        }            
+    }
+        
+    @Section(title: "Add the service call") {
+        @ContentAndMedia {
+            Now that your service file exists, is identified, and has the right base url, let's implement the proper service call.
+        }
+        
+        @Steps {            
+            @Step {
+                Add the new method related to the implemented call.
+                
+                The call we implement is the fetch of the velocity limits for one `cardId`.
+                
+                > Important: The return type of the call is a `Single<SpendingLimits>`. We return a `Single` to wrap the entity decoded from the call. The entity ``SpendingLimits`` is not the topic of this tutorial. It is just a struct conforming to `Decodable`.
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-02-01.swift, previousFile: service-code-01-04.swift)
+            }
+            
+            @Step {
+                Compute the final url for the call. 
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-02-02.swift)
+            }
+            
+            @Step {
+                Create the request object to send to the data source.
+                
+                > Experiment: You can play with different parameters in the `DataSourceRequest`
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-02-03.swift)
+            }
+            
+            @Step {
+                Call the data source with the request.
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-02-04.swift)
+            }
+            
+            @Step {
+                Decode the result of the call before returning.
+                
+                @Code(name: "VelocityLimitsService.swift", file: service-code-02-05.swift)
+            }
+        }
+    }
+        
+    @Section(title: "Make the service available to the Kit") {
+        @ContentAndMedia {
+            The service is fully implemented, but there are still a few steps left before using it into the Kit.
+            
+            First you will add the service to the Services Assembly, in order to be injected seamlessly into your ViewModels.
+            (For more information on the mecanism itself, read <doc:Injection>)
+            
+            Then, you might want to make the service working in mock.
+        }
+        
+        @Steps {
+            @Step {
+                Go to the `Dependencies+Services` file and add your service.
+                
+                @Code(name: "Dependencies+Services.swift", file: service-code-dependency-modified.swift, previousFile: service-code-dependency-original.swift)
+            }
+            
+            In order to make the mock work, you need to have a service key (just like the one added at the beginning), and a mock file.
+            
+            @Step {
+                Create a new `json` file in the /Mocks/Resources/Mocks folder.
+                
+                The name of this file is comprised of the ServiceKey (`velocityLimits` in this example), and the last pathComponent of the URL (a `cardId` in this case), and needs to follow the pattern "ServiceKey.lastPathComponentOfYourURL.json"
+                
+                
+                @Code(name: "velocityLimits.2000000000058107.json", file: service-code-mock-01.json, reset: true)
+            }
+            
+            @Step {
+                Add a json that can be decoded to your entity.
+                
+                
+                @Code(name: "velocityLimits.2000000000058107.json", file: service-code-mock-02.json)
+            }
+        }
+    }
+        
+    @Section(title: "Wrap up") {
+        @ContentAndMedia {
+            Congrats ! 🎉
+            
+            You finished implementing a complete service, with dependency injection, network calls, and mocks !
+            The next step could be to call the service in your ViewModel.
+        }
+        
+        @Steps { }
+    }
+}

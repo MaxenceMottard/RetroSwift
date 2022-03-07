@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Network errors which can be throwed by the `ServiceCaller`
 public enum NetworkError: Error {
     case cantGenerateRequest
     case cantGenerateImageBody

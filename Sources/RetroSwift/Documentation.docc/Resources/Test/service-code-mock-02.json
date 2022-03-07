@@ -1,0 +1,95 @@
+{
+  "limits": {
+    "GLOBAL": {
+      "description": "string",
+      "currentAmount": {
+        "exponent": 2,
+        "value": 242312,
+        "alphaCurrencyCode": "EUR"
+      },
+      "maximumAmount": {
+        "exponent": 2,
+        "value": 250000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "leftAmount": {
+        "exponent": 2,
+        "value": 7688,
+        "alphaCurrencyCode": "EUR"
+      }
+    },
+    "POS": {
+      "description": "string",
+      "currentAmount": {
+        "exponent": 2,
+        "value": 10000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "maximumAmount": {
+        "exponent": 2,
+        "value": 150000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "leftAmount": {
+        "exponent": 2,
+        "value": 140000,
+        "alphaCurrencyCode": "EUR"
+      }
+    },
+    "NFC": {
+      "description": "string",
+      "currentAmount": {
+        "exponent": 2,
+        "value": 10000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "maximumAmount": {
+        "exponent": 2,
+        "value": 50000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "leftAmount": {
+        "exponent": 2,
+        "value": 40000,
+        "alphaCurrencyCode": "EUR"
+      }
+    },
+    "E_COMMERCE": {
+      "description": "string",
+      "currentAmount": {
+        "exponent": 2,
+        "value": 10000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "maximumAmount": {
+        "exponent": 2,
+        "value": 100000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "leftAmount": {
+        "exponent": 2,
+        "value": 90000,
+        "alphaCurrencyCode": "EUR"
+      }
+    },
+    "ATM_WITHDRAWAL": {
+      "description": "string",
+      "currentAmount": {
+        "exponent": 2,
+        "value": 5000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "maximumAmount": {
+        "exponent": 2,
+        "value": 50000,
+        "alphaCurrencyCode": "EUR"
+      },
+      "leftAmount": {
+        "exponent": 2,
+        "value": 45000,
+        "alphaCurrencyCode": "EUR"
+      }
+    }
+  },
+  "limitActive": []
+}
