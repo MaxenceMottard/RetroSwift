@@ -19,22 +19,22 @@ public class ServiceCaller<D> {
     //  MARK: Public functions
 
     //  MARK: Without body
-    public func call(queryParameters: [String: Any] = [:]) async throws -> D where D: Decodable {
-        let request = try await generateRequest(queryParameters: queryParameters)
+    public func call(queryParameters: [String: Any] = [:], pathKeysValues: [String: String] = [:]) async throws -> D where D: Decodable {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         let data = try await genericCall(request)
 
         return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
-    public func call(queryParameters: [String: Any] = [:]) async throws {
-        let request = try await generateRequest(queryParameters: queryParameters)
+    public func call(queryParameters: [String: Any] = [:], pathKeysValues: [String: String] = [:]) async throws {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         _ = try await genericCall(request)
     }
 
     public func uploadFile(filename: String, filetype: String, data: Data) async throws {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
         params.headers["Content-Type"] = fileUploadingData.contentType
-        var request = try await generateRequest(queryParameters: [:])
+        var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
         request.httpBody = fileUploadingData.body
         _ = try await genericCall(request)
     }
@@ -42,7 +42,7 @@ public class ServiceCaller<D> {
     public func uploadFile(filename: String, filetype: String, data: Data) async throws -> D where D: Decodable {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
         params.headers["Content-Type"] = fileUploadingData.contentType
-        var request = try await generateRequest(queryParameters: [:])
+        var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
         request.httpBody = fileUploadingData.body
         let data = try await genericCall(request)
 
@@ -50,15 +50,23 @@ public class ServiceCaller<D> {
     }
 
     //  MARK: With body
-    public func call<T: Encodable>(body: T, queryParameters: [String: Any] = [:]) async throws -> D where D: Decodable {
-        let request = try await generateRequest(with: body, queryParameters: queryParameters)
+    public func call<T: Encodable>(
+        body: T,
+        queryParameters: [String: Any] = [:],
+        pathKeysValues: [String: String] = [:]
+    ) async throws -> D where D: Decodable {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         let data = try await genericCall(request)
 
         return try requestInterceptor.jsonDecoder.decode(D.self, from: data)
     }
 
-    public func call<T: Encodable>(body: T, queryParameters: [String: Any] = [:]) async throws {
-        let request = try await generateRequest(with: body, queryParameters: queryParameters)
+    public func call<T: Encodable>(
+        body: T,
+        queryParameters: [String: Any] = [:],
+        pathKeysValues: [String: String] = [:]
+    ) async throws {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         _ = try await genericCall(request)
     }
 
@@ -106,17 +114,28 @@ public class ServiceCaller<D> {
         return data
     }
 
-    private func generateRequest<T: Encodable>(with body: T, queryParameters: [String: Any]) async throws -> URLRequest {
+    private func generateRequest<T: Encodable>(
+        with body: T,
+        queryParameters: [String: Any],
+        pathKeysValues: [String: String]
+    ) async throws -> URLRequest {
         guard let encodedBody = try? requestInterceptor.jsonEncoder.encode(body) else { throw NetworkError.encodeError }
 
-        var request = try await generateRequest(queryParameters: queryParameters)
+        var request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues    )
         request.httpBody = encodedBody
 
         return request
     }
 
-    private func generateRequest(queryParameters: [String: Any]) async throws -> URLRequest {
-        guard var url = URL(string: params.url) else { throw NetworkError.wrongUrl }
+    private func generateRequest(queryParameters: [String: Any], pathKeysValues: [String: String]) async throws -> URLRequest {
+        var urlString = params.url
+
+        pathKeysValues.keys.forEach { key in
+            guard let value = pathKeysValues[key] else { return }
+            urlString = urlString.replacingOccurrences(of: ":\(key)", with: value)
+        }
+
+        guard var url = URL(string: urlString) else { throw NetworkError.wrongUrl }
 
         if queryParameters.values.count > 0, var component = URLComponents(string: url.absoluteString) {
             component.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: "\($0.value)") }
