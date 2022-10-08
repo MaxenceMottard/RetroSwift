@@ -19,6 +19,12 @@ public class ServiceCaller<D> {
     //  MARK: Public functions
 
     //  MARK: Without body
+    public func call(queryParameters: [String: Any] = [:], pathKeysValues: [String: String] = [:]) async throws -> Data {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+
+        return try await genericCall(request)
+    }
+
     public func call(queryParameters: [String: Any] = [:], pathKeysValues: [String: String] = [:]) async throws -> D where D: Decodable {
         let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         let data = try await genericCall(request)
@@ -50,6 +56,16 @@ public class ServiceCaller<D> {
     }
 
     //  MARK: With body
+    public func call<T: Encodable>(
+        body: T,
+        queryParameters: [String: Any] = [:],
+        pathKeysValues: [String: String] = [:]
+    ) async throws -> Data {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+
+        return try await genericCall(request)
+    }
+
     public func call<T: Encodable>(
         body: T,
         queryParameters: [String: Any] = [:],
