@@ -171,7 +171,6 @@ public class ServiceCaller<D> {
     }
 
     private func genericCall(_ request: URLRequest) async throws -> Data {
-
         let (data, response) = try await requestInterceptor.urlSession.dataAsync(from: request)
 
         guard let response = response as? HTTPURLResponse else { throw NetworkError.unknownError }
