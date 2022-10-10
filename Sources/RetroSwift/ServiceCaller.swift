@@ -19,7 +19,7 @@ public class ServiceCaller<D> {
     //  MARK: Public functions
 
     //  MARK: Without body
-    public func callData(
+    public func data(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<Data, Error> {
@@ -33,7 +33,7 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func call(
+    public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<D, Error> where D: Decodable {
@@ -48,7 +48,7 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func call(
+    public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<Void, Error> {
@@ -96,7 +96,7 @@ public class ServiceCaller<D> {
     }
 
     //  MARK: With body
-    public func callData<T: Encodable>(
+    public func data<T: Encodable>(
         body: T,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
@@ -111,7 +111,7 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func call<T: Encodable>(
+    public func callAsFunction<T: Encodable>(
         body: T,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
@@ -127,7 +127,7 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func call<T: Encodable>(
+    public func callAsFunction<T: Encodable>(
         body: T,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
