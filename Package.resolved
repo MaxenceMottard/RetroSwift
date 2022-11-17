@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SPMUtilitiesPlugins",
+        "repositoryURL": "https://github.com/MaxenceMottard/SPMUtilitiesPlugins",
+        "state": {
+          "branch": null,
+          "revision": "33f055cb3f453819384d4435191e5137ed2abc9d",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
