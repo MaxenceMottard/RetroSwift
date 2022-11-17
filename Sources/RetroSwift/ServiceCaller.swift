@@ -1,6 +1,6 @@
 //
 //  ServiceCaller.swift
-//  
+//
 //
 //  Created by Maxence on 15/01/2022.
 //
@@ -16,9 +16,10 @@ public class ServiceCaller<D> {
         self.requestInterceptor = requestInterceptor
     }
 
-    //  MARK: Public functions
+    // MARK: Public functions
 
-    //  MARK: Without body
+    // MARK: Without body
+
     public func data(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
@@ -95,9 +96,10 @@ public class ServiceCaller<D> {
         }
     }
 
-    //  MARK: With body
-    public func data<T: Encodable>(
-        body: T,
+    // MARK: With body
+
+    public func data(
+        body: some Encodable,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<Data, Error> {
@@ -111,8 +113,8 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func callAsFunction<T: Encodable>(
-        body: T,
+    public func callAsFunction(
+        body: some Encodable,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<D, Error> where D: Decodable {
@@ -127,8 +129,8 @@ public class ServiceCaller<D> {
         }
     }
 
-    public func callAsFunction<T: Encodable>(
-        body: T,
+    public func callAsFunction(
+        body: some Encodable,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
     ) async -> Result<Void, Error> {
@@ -142,7 +144,8 @@ public class ServiceCaller<D> {
         }
     }
 
-    //  MARK: Private functions
+    // MARK: Private functions
+
     private func generateFileUploadBody(
         filename: String,
         filetype: String,
@@ -156,8 +159,8 @@ public class ServiceCaller<D> {
               let contentDispositionString = "Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8),
               let contentTypeString = "Content-Type: \(filetype)\r\n\r\n".data(using: .utf8),
               let separator = "\r\n".data(using: .utf8) else {
-                  throw NetworkError.cantGenerateImageBody
-              }
+            throw NetworkError.cantGenerateImageBody
+        }
 
         var body = Data()
         body.append(boundaryStart)
@@ -185,14 +188,14 @@ public class ServiceCaller<D> {
         return data
     }
 
-    private func generateRequest<T: Encodable>(
-        with body: T,
+    private func generateRequest(
+        with body: some Encodable,
         queryParameters: [String: Any],
         pathKeysValues: [String: String]
     ) async throws -> URLRequest {
         guard let encodedBody = try? requestInterceptor.jsonEncoder.encode(body) else { throw NetworkError.encodeError }
 
-        var request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues    )
+        var request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
         request.httpBody = encodedBody
 
         return request
@@ -206,9 +209,9 @@ public class ServiceCaller<D> {
             urlString = urlString.replacingOccurrences(of: ":\(key)", with: value)
         }
 
-        guard var url = URL(string: urlString) else { throw NetworkError.wrongUrl }
+        guard var url = URL(string: urlString) else { throw NetworkError.wrongURL }
 
-        if queryParameters.values.count > 0, var component = URLComponents(string: url.absoluteString) {
+        if !queryParameters.values.isEmpty, var component = URLComponents(string: url.absoluteString) {
             component.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: "\($0.value)") }
 
             url = component.url ?? url

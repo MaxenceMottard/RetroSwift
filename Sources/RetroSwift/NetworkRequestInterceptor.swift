@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Maxence on 22/01/2022.
 //
@@ -16,16 +16,16 @@ public protocol NetworkRequestInterceptor {
     func intercept(_ request: inout URLRequest) async throws
 }
 
-extension NetworkRequestInterceptor {
-    public var urlSession: URLSession {
+public extension NetworkRequestInterceptor {
+    var urlSession: URLSession {
         .shared
     }
 
-    public var jsonDecoder: JSONDecoder {
+    var jsonDecoder: JSONDecoder {
         JSONDecoder()
     }
 
-    public var jsonEncoder: JSONEncoder {
+    var jsonEncoder: JSONEncoder {
         JSONEncoder()
     }
 }

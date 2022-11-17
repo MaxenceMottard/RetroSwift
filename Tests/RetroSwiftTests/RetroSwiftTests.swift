@@ -1,6 +1,4 @@
 import XCTest
 @testable import RetroSwift
 
-final class RetroSwiftTests: XCTestCase {
-
-}
+final class RetroSwiftTests: XCTestCase {}

@@ -1,6 +1,6 @@
 //
 //  NetworkError.swift
-//  
+//
 //
 //  Created by Maxence on 15/01/2022.
 //
@@ -13,7 +13,7 @@ public enum NetworkError: Error {
     case cantGenerateImageBody
     case decodeError
     case encodeError
-    case wrongUrl
+    case wrongURL
     case statusCodeError(Int, [String: Any]?)
     case unknownError
     case custom(String)

@@ -1,6 +1,6 @@
 //
 //  URLSession+Extensions.swift
-//  
+//
 //
 //  Created by Maxence on 15/01/2022.
 //
@@ -16,7 +16,7 @@ extension URLSession {
 
         return try await withCheckedThrowingContinuation { continuation in
             let task = self.dataTask(with: request) { data, response, error in
-                guard let data = data, let response = response else {
+                guard let data, let response else {
                     let error = error ?? URLError(.badServerResponse)
                     return continuation.resume(throwing: error)
                 }

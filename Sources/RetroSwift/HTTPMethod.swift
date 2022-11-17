@@ -1,6 +1,6 @@
 //
 //  HTTPMethod.swift
-//  
+//
 //
 //  Created by Maxence on 15/01/2022.
 //

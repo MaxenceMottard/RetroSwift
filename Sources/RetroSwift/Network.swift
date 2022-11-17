@@ -1,6 +1,6 @@
 //
 //  Network.swift
-//  
+//
 //
 //  Created by Maxence on 15/01/2022.
 //
@@ -21,10 +21,10 @@ public struct Network<D> {
         url: String,
         method: HTTPMethod,
         headers: [String: String] = ["Content-Type": "application/json"],
-        successStatusCodes: Set<Int> = Set<Int>(200...209),
+        successStatusCodes: Set<Int> = Set<Int>(200 ... 209),
         requestInterceptor: NetworkRequestInterceptor? = nil
     ) {
-        wrappedValue = NetworkParameters(
+        self.wrappedValue = NetworkParameters(
             decodeType: D.self,
             method: method,
             url: url,
