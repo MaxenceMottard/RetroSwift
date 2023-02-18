@@ -30,6 +30,18 @@ public extension NetworkRequestInterceptor {
     }
 }
 
+public protocol DataNetworkRequestInterceptor: NetworkRequestInterceptor {
+    associatedtype DecodedType
+
+    func runURLRequest(from request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension DataNetworkRequestInterceptor {
+    func runURLRequest(from request: URLRequest) async throws -> (Data, URLResponse) {
+        try await urlSession.dataAsync(from: request)
+    }
+}
+
 final class DefaultNetworkRequestInterceptor: NetworkRequestInterceptor {
     func intercept(_ request: inout URLRequest) async throws {}
 }

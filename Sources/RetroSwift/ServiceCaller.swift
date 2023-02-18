@@ -174,7 +174,7 @@ public class ServiceCaller<D> {
     }
 
     private func genericCall(_ request: URLRequest) async throws -> Data {
-        let (data, response) = try await requestInterceptor.urlSession.dataAsync(from: request)
+        let (data, response) = try await runRequest(for: request)
 
         guard let response = response as? HTTPURLResponse else { throw NetworkError.unknownError }
 
@@ -186,6 +186,14 @@ public class ServiceCaller<D> {
         }
 
         return data
+    }
+
+    private func runRequest(for request: URLRequest) async throws -> (Data, URLResponse) {
+        if let requestInterceptor = requestInterceptor as? (any DataNetworkRequestInterceptor) {
+            return try await requestInterceptor.runURLRequest(from: request)
+        } else {
+            return try await requestInterceptor.urlSession.dataAsync(from: request)
+        }
     }
 
     private func generateRequest(
