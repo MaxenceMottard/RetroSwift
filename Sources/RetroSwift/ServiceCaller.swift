@@ -7,141 +7,92 @@
 
 import Foundation
 
-public class ServiceCaller<D> {
+public class ServiceCaller<Body, Response> {
     private let requestInterceptor: NetworkRequestInterceptor
-    private var params: NetworkParameters<D>
+    private var params: NetworkParameters<Body, Response>
 
-    init(_ params: NetworkParameters<D>, requestInterceptor: NetworkRequestInterceptor) {
+    init(_ params: NetworkParameters<Body, Response>, requestInterceptor: NetworkRequestInterceptor) {
         self.params = params
         self.requestInterceptor = requestInterceptor
     }
 
-    // MARK: Public functions
-
     // MARK: Without body
 
-    public func data(
+    public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<Data, Error> {
-        do {
-            let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            let data = try await genericCall(request)
+    ) async throws -> Data where Response == Data, Body == Void {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
 
-            return .success(data)
-        } catch {
-            return .failure(error)
-        }
+        return try await genericCall(request)
     }
 
     public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<D, Error> where D: Decodable {
-        do {
-            let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            let data = try await genericCall(request)
-            let decodedData = try requestInterceptor.jsonDecoder.decode(D.self, from: data)
+    ) async throws -> Response where Response: Decodable, Body == Void {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+        let data = try await genericCall(request)
 
-            return .success(decodedData)
-        } catch {
-            return .failure(error)
-        }
+        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
     }
 
     public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<Void, Error> {
-        do {
-            let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            _ = try await genericCall(request)
-
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+    ) async throws where Body == Void, Response == Void {
+        let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+        _ = try await genericCall(request)
     }
 
-    public func uploadFile(filename: String, filetype: String, data: Data) async -> Result<Void, Error> {
-        do {
-            let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
-            params.headers["Content-Type"] = fileUploadingData.contentType
-            var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
-            request.httpBody = fileUploadingData.body
-            _ = try await genericCall(request)
-
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+    public func uploadFile(filename: String, filetype: String, data: Data) async throws where Response == Void {
+        let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
+        params.headers["Content-Type"] = fileUploadingData.contentType
+        var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
+        request.httpBody = fileUploadingData.body
+        _ = try await genericCall(request)
     }
 
-    public func uploadFile(
-        filename: String,
-        filetype: String,
-        data: Data
-    ) async throws -> Result<D, Error> where D: Decodable {
-        do {
-            let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
-            params.headers["Content-Type"] = fileUploadingData.contentType
-            var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
-            request.httpBody = fileUploadingData.body
-            let data = try await genericCall(request)
-            let decodedData = try requestInterceptor.jsonDecoder.decode(D.self, from: data)
+    public func uploadFile(filename: String, filetype: String, data: Data) async throws -> Response where Response: Decodable {
+        let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
+        params.headers["Content-Type"] = fileUploadingData.contentType
+        var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
+        request.httpBody = fileUploadingData.body
+        let data = try await genericCall(request)
 
-            return .success(decodedData)
-        } catch {
-            return .failure(error)
-        }
+        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
     }
 
     // MARK: With body
 
-    public func data(
-        body: some Encodable,
+    public func callAsFunction(
+        body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<Data, Error> {
-        do {
-            let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            let data = try await genericCall(request)
+    ) async throws -> Data where Response == Data, Body: Encodable {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
 
-            return .success(data)
-        } catch {
-            return .failure(error)
-        }
+        return try await genericCall(request)
     }
 
     public func callAsFunction(
-        body: some Encodable,
+        body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<D, Error> where D: Decodable {
-        do {
-            let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            let data = try await genericCall(request)
-            let decodedData = try requestInterceptor.jsonDecoder.decode(D.self, from: data)
+    ) async throws -> Response where Response: Decodable, Body: Encodable {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+        let data = try await genericCall(request)
 
-            return .success(decodedData)
-        } catch {
-            return .failure(error)
-        }
+        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
     }
 
     public func callAsFunction(
-        body: some Encodable,
+        body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async -> Result<Void, Error> {
-        do {
-            let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-            _ = try await genericCall(request)
-
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+    ) async throws where Response == Void, Body: Encodable {
+        let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
+        _ = try await genericCall(request)
     }
 
     // MARK: Private functions

@@ -8,8 +8,8 @@
 import Foundation
 
 @propertyWrapper
-public struct Network<D> {
-    public var wrappedValue: ServiceCaller<D>
+public struct Network<Body, Response> {
+    public var wrappedValue: ServiceCaller<Body, Response>
 
     /// Init the property wrapper to generate a service caller
     /// - Parameter url: String url for the request.
@@ -25,7 +25,8 @@ public struct Network<D> {
         requestInterceptor: NetworkRequestInterceptor? = nil
     ) {
         self.wrappedValue = NetworkParameters(
-            decodeType: D.self,
+            decodeType: Response.self,
+            bodyType: Body.self,
             method: method,
             url: url,
             headers: headers,

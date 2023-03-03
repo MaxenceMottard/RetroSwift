@@ -7,14 +7,15 @@
 
 import Foundation
 
-struct NetworkParameters<D> {
-    let decodeType: D.Type
+struct NetworkParameters<Body, Response> {
+    let decodeType: Response.Type
+    let bodyType: Body.Type
     let method: HTTPMethod
     let url: String
     var headers: [String: String]
     let successStatusCodes: Set<Int>
 
-    func caller(requestInterceptor: NetworkRequestInterceptor) -> ServiceCaller<D> {
+    func caller(requestInterceptor: NetworkRequestInterceptor) -> ServiceCaller<Body, Response> {
         ServiceCaller(self, requestInterceptor: requestInterceptor)
     }
 }
