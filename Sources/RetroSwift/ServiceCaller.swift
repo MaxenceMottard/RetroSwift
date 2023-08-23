@@ -21,7 +21,7 @@ public class ServiceCaller<Body, Response> {
     public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws -> Data where Response == Data, Body == Void {
+    ) async throws -> NetworkResult<Data> where Response == Data, Body == Void {
         let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
 
         return try await genericCall(request)
@@ -30,37 +30,49 @@ public class ServiceCaller<Body, Response> {
     public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws -> Response where Response: Decodable, Body == Void {
+    ) async throws -> NetworkResult<Response> where Response: Decodable, Body == Void {
         let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-        let data = try await genericCall(request)
+        let result = try await genericCall(request)
+        let decodedData = try requestInterceptor.jsonDecoder.decode(Response.self, from: result.data)
 
-        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
+        return .init(response: result.response, data: decodedData)
     }
 
+    @discardableResult
     public func callAsFunction(
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws where Body == Void, Response == Void {
+    ) async throws -> NetworkResult<Void> where Body == Void, Response == Void {
         let request = try await generateRequest(queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-        _ = try await genericCall(request)
+        let result = try await genericCall(request)
+
+        return .init(response: result.response)
     }
 
-    public func uploadFile(filename: String, filetype: String, data: Data) async throws where Response == Void {
+    @discardableResult
+    public func uploadFile(
+        filename: String,
+        filetype: String,
+        data: Data
+    ) async throws -> NetworkResult<Void> where Response == Void {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
         params.headers["Content-Type"] = fileUploadingData.contentType
         var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
         request.httpBody = fileUploadingData.body
-        _ = try await genericCall(request)
+        let result = try await genericCall(request)
+
+        return .init(response: result.response)
     }
 
-    public func uploadFile(filename: String, filetype: String, data: Data) async throws -> Response where Response: Decodable {
+    public func uploadFile(filename: String, filetype: String, data: Data) async throws -> NetworkResult<Response> where Response: Decodable {
         let fileUploadingData = try generateFileUploadBody(filename: filename, filetype: filetype, data: data)
         params.headers["Content-Type"] = fileUploadingData.contentType
         var request = try await generateRequest(queryParameters: [:], pathKeysValues: [:])
         request.httpBody = fileUploadingData.body
-        let data = try await genericCall(request)
+        let result = try await genericCall(request)
+        let decodedData = try requestInterceptor.jsonDecoder.decode(Response.self, from: result.data)
 
-        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
+        return .init(response: result.response, data: decodedData)
     }
 
     // MARK: With body
@@ -69,7 +81,7 @@ public class ServiceCaller<Body, Response> {
         body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws -> Data where Response == Data, Body: Encodable {
+    ) async throws -> NetworkResult<Data> where Response == Data, Body: Encodable {
         let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
 
         return try await genericCall(request)
@@ -79,20 +91,24 @@ public class ServiceCaller<Body, Response> {
         body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws -> Response where Response: Decodable, Body: Encodable {
+    ) async throws -> NetworkResult<Response> where Response: Decodable, Body: Encodable {
         let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-        let data = try await genericCall(request)
+        let result = try await genericCall(request)
+        let decodedData = try requestInterceptor.jsonDecoder.decode(Response.self, from: result.data)
 
-        return try requestInterceptor.jsonDecoder.decode(Response.self, from: data)
+        return .init(response: result.response, data: decodedData)
     }
 
+    @discardableResult
     public func callAsFunction(
         body: Body,
         queryParameters: [String: Any] = [:],
         pathKeysValues: [String: String] = [:]
-    ) async throws where Response == Void, Body: Encodable {
+    ) async throws -> NetworkResult<Void> where Response == Void, Body: Encodable {
         let request = try await generateRequest(with: body, queryParameters: queryParameters, pathKeysValues: pathKeysValues)
-        _ = try await genericCall(request)
+        let result = try await genericCall(request)
+
+        return .init(response: result.response)
     }
 
     // MARK: Private functions
@@ -124,7 +140,7 @@ public class ServiceCaller<Body, Response> {
         return (body: body, contentType: contentType)
     }
 
-    private func genericCall(_ request: URLRequest) async throws -> Data {
+    private func genericCall(_ request: URLRequest) async throws -> NetworkResult<Data> {
         let (data, response) = try await runRequest(for: request)
 
         guard let response = response as? HTTPURLResponse else { throw NetworkError.unknownError }
@@ -136,7 +152,7 @@ public class ServiceCaller<Body, Response> {
             )
         }
 
-        return data
+        return .init(response: response, data: data)
     }
 
     private func runRequest(for request: URLRequest) async throws -> (Data, URLResponse) {
@@ -186,5 +202,30 @@ public class ServiceCaller<Body, Response> {
         try await requestInterceptor.intercept(&request)
 
         return request
+    }
+}
+
+public struct NetworkResult<D> {
+    public let response: HTTPURLResponse
+    private let _data: D
+
+    public init(response: HTTPURLResponse, data: D) {
+        self.response = response
+        self._data = data
+    }
+}
+
+public extension NetworkResult where D: Decodable {
+    var data: D { _data }
+}
+
+public extension NetworkResult where D == Data {
+    var data: D { _data }
+}
+
+public extension NetworkResult where D == Void {
+    init(response: HTTPURLResponse) {
+        self.response = response
+        self._data = ()
     }
 }
