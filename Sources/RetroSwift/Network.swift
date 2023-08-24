@@ -9,7 +9,7 @@ import Foundation
 
 @propertyWrapper
 public struct Network<Body, Response> {
-    public var wrappedValue: ServiceCaller<Body, Response>
+    public var wrappedValue: any ServiceCalling<Body, Response>
 
     /// Init the property wrapper to generate a service caller
     /// - Parameter url: String url for the request.
@@ -24,13 +24,12 @@ public struct Network<Body, Response> {
         successStatusCodes: Set<Int> = Set<Int>(200 ... 209),
         requestInterceptor: NetworkRequestInterceptor? = nil
     ) {
-        self.wrappedValue = NetworkParameters(
-            decodeType: Response.self,
-            bodyType: Body.self,
+        self.wrappedValue = ServiceCaller(
             method: method,
             url: url,
             headers: headers,
-            successStatusCodes: successStatusCodes
-        ).caller(requestInterceptor: requestInterceptor ?? DefaultNetworkRequestInterceptor())
+            successStatusCodes: successStatusCodes,
+            requestInterceptor: requestInterceptor ?? DefaultNetworkRequestInterceptor()
+        )
     }
 }

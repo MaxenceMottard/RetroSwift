@@ -42,6 +42,8 @@ extension DataNetworkRequestInterceptor {
     }
 }
 
-final class DefaultNetworkRequestInterceptor: NetworkRequestInterceptor {
-    func intercept(_ request: inout URLRequest) async throws {}
+public final class DefaultNetworkRequestInterceptor: NetworkRequestInterceptor {
+    public init() {}
+
+    public func intercept(_ request: inout URLRequest) async throws {}
 }
